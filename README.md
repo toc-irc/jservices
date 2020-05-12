@@ -11,6 +11,7 @@ Any messages received will be sent to them like a memoserv.
 ```
 git clone https://github.com/toc-irc/jservices
 cd jservices
+npm install node-mailin
 ```
 
 2. Setup example.conf and rename
