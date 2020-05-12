@@ -1,13 +1,15 @@
-const DEBUG = false;
 const net = require('net');
 const fs = require('fs');
 
+// Load Config
 const _config = process.argv[2]?process.argv[2]:"services.conf";
 var config = {};
 if(fs.existsSync(_config)) config = JSON.parse(fs.readFileSync(_config));
 else process.exit(1);
 if(config.length==0) process.exit(1);
+const DEBUG = config.debug;
 
+// Service
 (async function() {
   var connection=net.createConnection(config.port,config.host);
   connection.target=config;
@@ -70,6 +72,18 @@ if(config.length==0) process.exit(1);
                   this.users[nick].timestamp=newts;
                   this.users[nick].server=this.target.host;
                   this.users[nick].messages=[];
+                }
+                break;
+              case 'NICK':
+                if(commands[3]) {
+                  uid=commands[0].substr(1);
+                  nick=this.uids[uid];
+                  newnick=commands[2];
+                  newts=commands[3].substr(1);
+                  this.uids[uid]=newnick;
+                  this.users[newnick]=this.users[nick];
+                  this.users[newnick].timestamp=newts;
+                  delete this.users[nick];
                 }
                 break;
               case 'PRIVMSG':
