@@ -6,6 +6,8 @@ they simply msg their old nickname 'RELEASE' and they will automatically regain 
 
 Any messages received will be sent to them like a memoserv.
 
+Additionally, emails received on port 25 will be forwarded to the nickname on the IRC network.
+
 ## Install
 1. Download
 ```
@@ -21,7 +23,7 @@ mv example.conf services.conf
 
 3. Run
 ```
-node services.js
+sudo node services.js
 ```
 
 ## Copyright
