@@ -54,8 +54,9 @@ const DEBUG = config.debug;
             switch(commands[1]) {
               case 'UID':
                 if(commands[11]) {
-                  nick=commands[2];
+                  nick=commands[2].toLowerCase();
                   this.users[nick]={};
+                  this.users[nick].nickname=commands[2];
                   this.users[nick].server=commands[0].substr(1);
                   this.users[nick].username=commands[6];
                   this.users[nick].hostname=commands[7];
@@ -71,7 +72,7 @@ const DEBUG = config.debug;
                 if(commands[2]) {
                   uid=commands[0].substr(1);
                   nick=this.uids[uid];
-                  this.send(":"+this.target.mySID+" UID "+nick+" 1 "+(newts=Math.floor(new Date() / 1000))+" +i "+this.users[nick].username+" "+this.users[nick].hostname + " " + this.users[nick].ip + " " + (newid = this.target.mySID+uid.substr(3)) + " * :"+this.users[nick].gecos);
+                  this.send(":"+this.target.mySID+" UID "+this.users[nick].nickname+" 1 "+(newts=Math.floor(new Date() / 1000))+" +i "+this.users[nick].username+" "+this.users[nick].hostname + " " + this.users[nick].ip + " " + (newid = this.target.mySID+uid.substr(3)) + " * :"+this.users[nick].gecos);
                   delete this.uids[uid];
                   this.uids[newid]=nick;
                   this.users[nick].timestamp=newts;
@@ -84,10 +85,11 @@ const DEBUG = config.debug;
                 if(commands[3]) {
                   uid=commands[0].substr(1);
                   nick=this.uids[uid];
-                  newnick=commands[2];
+                  newnick=commands[2].toLowerCase();
                   newts=commands[3].substr(1);
                   this.uids[uid]=newnick;
                   this.users[newnick]=this.users[nick];
+                  this.users[newnick].nickname=commands[2];
                   this.users[newnick].timestamp=newts;
                   delete this.users[nick];
                 }
@@ -98,6 +100,7 @@ const DEBUG = config.debug;
                     target_nick=this.uids[commands[2]];
                     sender_nick=this.uids[commands[0].substr(1)];
                     sender=this.users[sender_nick];
+                    receiver=this.users[target_nick];
 
                     if(target=this.users[target_nick]) {
                       msgobject={time:Math.round(Date.now()/1000),sender:sender_nick+"!"+sender.username+"@"+sender.hostname,msg:commands.slice(3).join(' ').substr(1).trim()};
@@ -106,7 +109,7 @@ const DEBUG = config.debug;
                     if(commands[3].substr(1).toLowerCase().trim()=="release" && !commands[4]) {
                       if(sender.hostname == target.hostname && sender.username == target.username && sender.gecos == target.gecos) {
                         this.send(":"+commands[2] + " QUIT " + ":RELEASE");
-                        this.send(":"+this.target.mySID + " SVSNICK " + commands[0].substr(1) + " " + target_nick +" "+ (newts=Math.round(Date.now()/1000)));
+                        this.send(":"+this.target.mySID + " SVSNICK " + commands[0].substr(1) + " " + receiver.nickname +" "+ (newts=Math.round(Date.now()/1000)));
                         delete this.uids[commands[2]];
                         this.uids[commands[0].substr(1)]=target_nick;
                         this.users[target_nick].server=this.users[sender_nick].server;
@@ -167,7 +170,7 @@ const DEBUG = config.debug;
     this.end();
   });
   nodeMailin.on('message', function (conn, data, content) {
-    nick=data.to.text.split("@")[0];
+    nick=data.to.text.split("@")[0].toLowerCase();
 
     if(connection.users[nick]) {
       connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Mail received from "+data.from.text+" on "+data.date);
