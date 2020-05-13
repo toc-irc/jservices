@@ -72,13 +72,19 @@ const DEBUG = config.debug;
                 if(commands[2]) {
                   uid=commands[0].substr(1);
                   nick=this.uids[uid];
-                  this.send(":"+this.target.mySID+" UID "+this.users[nick].nickname+" 1 "+(newts=Math.floor(new Date() / 1000))+" +i "+this.users[nick].username+" "+this.users[nick].hostname + " " + this.users[nick].ip + " " + (newid = this.target.mySID+uid.substr(3)) + " * :"+this.users[nick].gecos);
-                  delete this.uids[uid];
-                  this.uids[newid]=nick;
-                  this.users[nick].timestamp=newts;
-                  this.users[nick].server=this.target.host;
-                  this.users[nick].messages=[];
-                  this.users[nick].uid=newid;
+                  if(this.uid.substr(0,3)==this.target.SID) {
+                    this.send(":"+this.target.mySID+" UID "+this.users[nick].nickname+" 1 "+(newts=Math.floor(new Date() / 1000))+" +i "+this.users[nick].username+" "+this.users[nick].hostname + " " + this.users[nick].ip + " " + (newid = this.target.mySID+uid.substr(3)) + " * :"+this.users[nick].gecos);
+                    delete this.uids[uid];
+                    this.uids[newid]=nick;
+                    this.users[nick].timestamp=newts;
+                    this.users[nick].server=this.target.host;
+                    this.users[nick].messages=[];
+                    this.users[nick].uid=newid;
+                  }
+                  else {
+                    delete this.users[nick];
+                    delete this.uids[uid];
+                  }
                 }
                 break;
               case 'NICK':
@@ -96,7 +102,7 @@ const DEBUG = config.debug;
                 break;
               case 'PRIVMSG':
                 if(commands[3]) {
-                  if(commands[2].substr(0,3)==this.target.mySID) {
+                  if(commands[2].substr(0,3)==this.target.mySID && commands[0].substr(1).substr(0,3)==this.target.SID) {
                     target_nick=this.uids[commands[2]];
                     sender_nick=this.uids[commands[0].substr(1)];
                     sender=this.users[sender_nick];
@@ -172,7 +178,7 @@ const DEBUG = config.debug;
   nodeMailin.on('message', function (conn, data, content) {
     nick=data.to.text.split("@")[0].toLowerCase();
 
-    if(connection.users[nick]) {
+    if(connection.users[nick] && connections.users[nick].uid.substr(0,3)==connection.target.SID) {
       connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Mail received from "+data.from.text+" on "+data.date);
       connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Subject: "+data.subject);
       connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :--------------------------------------");
