@@ -18,7 +18,7 @@ npm install node-mailin
 
 2. Setup example.conf and rename
 ```
-mv example.conf services.conf
+cp example.conf services.conf
 ```
 
 3. Run
