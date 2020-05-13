@@ -1,9 +1,5 @@
-const nodeMailin = require('node-mailin');
 const net = require('net');
 const fs = require('fs');
-nodeMailin.start({
-  port: 25,
-});
 
 // Load Config
 const _config = process.argv[2]?process.argv[2]:"services.conf";
@@ -12,6 +8,13 @@ if(fs.existsSync(_config)) config = JSON.parse(fs.readFileSync(_config));
 else process.exit(1);
 if(config.length==0) process.exit(1);
 const DEBUG = config.debug;
+
+if(config.mail) {
+  const nodeMailin = require('node-mailin');
+  nodeMailin.start({
+    port: 25,
+  });
+}
 
 // Service
 (async function() {
@@ -175,18 +178,20 @@ const DEBUG = config.debug;
   connection.on('end',function() {
     this.end();
   });
-  nodeMailin.on('message', function (conn, data, content) {
-    nick=data.to.text.split("@")[0].toLowerCase();
+  if(config.mail) {
+    nodeMailin.on('message', function (conn, data, content) {
+      nick=data.to.text.split("@")[0].toLowerCase();
 
-    if(connection.users[nick] && connections.users[nick].uid.substr(0,3)==connection.target.SID) {
-      connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Mail received from "+data.from.text+" on "+data.date);
-      connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Subject: "+data.subject);
-      connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :--------------------------------------");
-      lines=data.text.split("\n");
-      for(n=0;n<lines.length;n++)
-        connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :"+lines[n]);
-      connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :--------------------------------------");
-    }
-  });
+      if(connection.users[nick] && connections.users[nick].uid.substr(0,3)==connection.target.SID) {
+        connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Mail received from "+data.from.text+" on "+data.date);
+        connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :Subject: "+data.subject);
+        connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :--------------------------------------");
+        lines=data.text.split("\n");
+        for(n=0;n<lines.length;n++)
+          connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :"+lines[n]);
+        connection.send(":"+connection.target.mySID+" NOTICE "+connection.users[nick].uid+" :--------------------------------------");
+      }
+    });
+  }
 })();
 
