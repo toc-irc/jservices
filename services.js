@@ -75,7 +75,7 @@ if(config.mail) {
                 if(commands[2]) {
                   uid=commands[0].substr(1);
                   nick=this.uids[uid];
-                  if(this.uid.substr(0,3)==this.target.SID) {
+                  if(uid.substr(0,3)==this.target.SID) {
                     this.send(":"+this.target.mySID+" UID "+this.users[nick].nickname+" 1 "+(newts=Math.floor(new Date() / 1000))+" +i "+this.users[nick].username+" "+this.users[nick].hostname + " " + this.users[nick].ip + " " + (newid = this.target.mySID+uid.substr(3)) + " * :"+this.users[nick].gecos);
                     delete this.uids[uid];
                     this.uids[newid]=nick;
